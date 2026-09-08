@@ -5,9 +5,18 @@ const app = express();
 
 const PORT = 3000;
 
-// Serve frontend files from public folder
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve frontend files
 app.use(express.static(path.join(__dirname, "public")));
 
+// Auth routes
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
+
+// Home page
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "signup.html"));
 });
