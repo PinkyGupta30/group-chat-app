@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Group Chat</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="chat-body">
+
+    <div class="chat-container">
+
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div>
+                <h2>💬 Group Chat</h2>
+                <span>Online</span>
+            </div>
+
+            <button id="logoutBtn" class="logout-btn">
+                Logout
+            </button>
+        </div>
+
+
+        <!-- Messages Area -->
+        <div class="messages" id="messages">
+
+            <div class="message received">
+                <div class="message-user">Rahul</div>
+                <div class="message-text">
+                    Hello everyone! 👋
+                </div>
+                <div class="message-time">
+                    10:30 AM
+                </div>
+            </div>
+
+
+            <div class="message sent">
+                <div class="message-text">
+                    Hi Rahul! How are you?
+                </div>
+                <div class="message-time">
+                    10:31 AM
+                </div>
+            </div>
+
+
+            <div class="message received">
+                <div class="message-user">Priya</div>
+                <div class="message-text">
+                    Good morning everyone 😊
+                </div>
+                <div class="message-time">
+                    10:32 AM
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Message Input -->
+        <form id="messageForm" class="message-form">
+
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Type a message..."
+                autocomplete="off"
+            >
+
+            <button type="submit">
+                Send ➤
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>

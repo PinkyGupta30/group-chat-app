@@ -69,3 +69,217 @@ p {
 a {
     text-decoration: none;
 }
+
+/* =========================
+   CHAT WINDOW
+========================= */
+
+.chat-body {
+    margin: 0;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #e9edf2;
+    font-family: Arial, sans-serif;
+}
+
+
+/* Main Chat Container */
+
+.chat-container {
+    width: 700px;
+    height: 650px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+
+/* Header */
+
+.chat-header {
+    height: 75px;
+
+    padding: 0 20px;
+
+    background: #333;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-header h2 {
+    margin: 0 0 5px 0;
+}
+
+.chat-header span {
+    font-size: 13px;
+    color: #b9f6ca;
+}
+
+
+/* Logout */
+
+.logout-btn {
+    width: auto;
+    padding: 8px 15px;
+
+    background: #555;
+    font-size: 14px;
+}
+
+
+/* Messages Area */
+
+.messages {
+    flex: 1;
+
+    padding: 20px;
+
+    overflow-y: auto;
+
+    background: #f7f7f7;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+/* Individual Message */
+
+.message {
+    max-width: 70%;
+
+    padding: 10px 14px;
+
+    border-radius: 10px;
+
+    position: relative;
+}
+
+
+/* Received Message */
+
+.received {
+    align-self: flex-start;
+
+    background: white;
+
+    border: 1px solid #ddd;
+}
+
+
+/* Sent Message */
+
+.sent {
+    align-self: flex-end;
+
+    background: #333;
+    color: white;
+}
+
+
+/* Username */
+
+.message-user {
+    font-size: 12px;
+
+    font-weight: bold;
+
+    margin-bottom: 5px;
+}
+
+
+/* Message Text */
+
+.message-text {
+    font-size: 15px;
+
+    line-height: 1.4;
+}
+
+
+/* Timestamp */
+
+.message-time {
+    font-size: 10px;
+
+    margin-top: 5px;
+
+    text-align: right;
+
+    opacity: 0.65;
+}
+
+
+/* Message Input Area */
+
+.message-form {
+    display: flex;
+
+    gap: 10px;
+
+    padding: 15px;
+
+    background: white;
+
+    border-top: 1px solid #ddd;
+}
+
+
+/* Message Input */
+
+.message-form input {
+    flex: 1;
+
+    padding: 12px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 20px;
+
+    font-size: 15px;
+
+    outline: none;
+}
+
+
+/* Send Button */
+
+.message-form button {
+    width: 90px;
+
+    border-radius: 20px;
+
+    background: #333;
+}
+
+
+/* Mobile */
+
+@media (max-width: 750px) {
+
+    .chat-container {
+        width: 95%;
+        height: 90vh;
+    }
+
+    .message {
+        max-width: 85%;
+    }
+}
