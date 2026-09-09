@@ -1,13 +1,8 @@
 const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
-const logoutBtn = document.getElementById("logoutBtn");
 
-
-/* Send Message */
-
-messageForm.addEventListener("submit", (event) => {
-
+messageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const messageText = messageInput.value.trim();
@@ -16,43 +11,54 @@ messageForm.addEventListener("submit", (event) => {
         return;
     }
 
-    const message = document.createElement("div");
+    const userId = 1; // temporary user ID
 
-    message.classList.add("message", "sent");
+    try {
+        const response = await fetch("/api/chat/messages", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                message: messageText
+            })
+        });
 
-    const currentTime = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+        const data = await response.json();
 
-    message.innerHTML = `
-        <div class="message-text">
-            ${messageText}
-        </div>
+        if (!response.ok) {
+            alert(data.message);
+            return;
+        }
 
-        <div class="message-time">
-            ${currentTime}
-        </div>
-    `;
+        const message = document.createElement("div");
 
-    messages.appendChild(message);
+        message.classList.add("message", "sent");
 
-    /* Automatically scroll to latest message */
+        const currentTime = new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
 
-    messages.scrollTop = messages.scrollHeight;
+        message.innerHTML = `
+            <div class="message-text">
+                ${messageText}
+            </div>
 
-    /* Clear input */
+            <div class="message-time">
+                ${currentTime}
+            </div>
+        `;
 
-    messageInput.value = "";
+        messages.appendChild(message);
 
-    messageInput.focus();
-});
+        messages.scrollTop = messages.scrollHeight;
 
+        messageInput.value = "";
+        messageInput.focus();
 
-/* Logout */
-
-logoutBtn.addEventListener("click", () => {
-
-    window.location.href = "/login.html";
-
+    } catch (error) {
+        console.error("Error sending message:", error);
+    }
 });

@@ -16,6 +16,10 @@ app.use(express.static(path.join(__dirname, "public")));
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
+// Chat routes
+const chatRoutes = require("./routes/chatRoutes");
+app.use("/api/chat", chatRoutes);
+
 // Home page
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "signup.html"));
