@@ -1,9 +1,17 @@
 const express = require("express");
 const path = require("path");
+const http = require("http");
+const WebSocket = require("ws");
 
 const app = express();
 
 const PORT = 3000;
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Create WebSocket server
+const wss = new WebSocket.Server({ server });
 
 // Middleware
 app.use(express.json());
@@ -25,6 +33,41 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "signup.html"));
 });
 
-app.listen(PORT, () => {
+
+// ===============================
+// WebSocket
+// ===============================
+
+wss.on("connection", (socket) => {
+
+    console.log("User connected through WebSocket");
+
+    socket.on("message", (data) => {
+
+        console.log("New message received:", data.toString());
+
+        // Send message to all connected users
+        wss.clients.forEach((client) => {
+
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(data.toString());
+            }
+
+        });
+    });
+
+    socket.on("close", () => {
+        console.log("User disconnected");
+    });
+
+    socket.on("error", (error) => {
+        console.error("WebSocket error:", error);
+    });
+});
+
+
+// Start server
+server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`WebSocket running at ws://localhost:${PORT}`);
 });
