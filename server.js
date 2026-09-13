@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const http = require("http");
-const WebSocket = require("ws");
+const { Server } = require("socket.io");
 
 const app = express();
 
@@ -10,8 +10,8 @@ const PORT = 3000;
 // Create HTTP server
 const server = http.createServer(app);
 
-// Create WebSocket server
-const wss = new WebSocket.Server({ server });
+// Create Socket.IO server
+const io = new Server(server);
 
 // Middleware
 app.use(express.json());
@@ -34,40 +34,40 @@ app.get("/", (req, res) => {
 });
 
 
-// ===============================
-// WebSocket
-// ===============================
+// ======================================
+// SOCKET.IO
+// ======================================
 
-wss.on("connection", (socket) => {
+io.on("connection", (socket) => {
 
-    console.log("User connected through WebSocket");
+    console.log("User connected through Socket.IO:", socket.id);
 
+    // Receive message from frontend
     socket.on("message", (data) => {
 
-        console.log("New message received:", data.toString());
+        console.log("New message received:", data);
 
         // Send message to all connected users
-        wss.clients.forEach((client) => {
+        io.emit("message", data);
 
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(data.toString());
-            }
-
-        });
     });
 
-    socket.on("close", () => {
-        console.log("User disconnected");
+    // User disconnected
+    socket.on("disconnect", () => {
+
+        console.log("User disconnected:", socket.id);
+
     });
 
-    socket.on("error", (error) => {
-        console.error("WebSocket error:", error);
-    });
 });
 
 
-// Start server
+// ======================================
+// START SERVER
+// ======================================
+
 server.listen(PORT, () => {
+
     console.log(`Server running at http://localhost:${PORT}`);
-    console.log(`WebSocket running at ws://localhost:${PORT}`);
+
 });

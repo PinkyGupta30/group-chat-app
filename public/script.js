@@ -4,27 +4,43 @@ const messages = document.getElementById("messages");
 
 
 // ======================================
-// CONNECT TO WEBSOCKET
+// CONNECT TO SOCKET.IO
 // ======================================
 
-const socket = new WebSocket("ws://localhost:3000");
+const socket = io("http://localhost:3000");
 
 
-// WebSocket connected
-socket.addEventListener("open", () => {
-    console.log("Connected to WebSocket server");
+// ======================================
+// SOCKET.IO CONNECTED
+// ======================================
+
+socket.on("connect", () => {
+
+    console.log("Connected to Socket.IO server");
+    console.log("Socket ID:", socket.id);
+
 });
 
 
-// WebSocket connection error
-socket.addEventListener("error", (error) => {
-    console.error("WebSocket error:", error);
+// ======================================
+// SOCKET.IO CONNECTION ERROR
+// ======================================
+
+socket.on("connect_error", (error) => {
+
+    console.error("Socket.IO connection error:", error);
+
 });
 
 
-// WebSocket disconnected
-socket.addEventListener("close", () => {
-    console.log("WebSocket connection closed");
+// ======================================
+// SOCKET.IO DISCONNECTED
+// ======================================
+
+socket.on("disconnect", () => {
+
+    console.log("Socket.IO connection closed");
+
 });
 
 
@@ -32,19 +48,11 @@ socket.addEventListener("close", () => {
 // RECEIVE LIVE MESSAGE
 // ======================================
 
-socket.addEventListener("message", (event) => {
+socket.on("message", (chat) => {
 
-    try {
+    console.log("Message received:", chat);
 
-        const chat = JSON.parse(event.data);
-
-        displayMessage(chat);
-
-    } catch (error) {
-
-        console.error("Error receiving WebSocket message:", error);
-
-    }
+    displayMessage(chat);
 
 });
 
@@ -59,14 +67,12 @@ function displayMessage(chat) {
 
     message.classList.add("message", "sent");
 
-
     const messageTime = new Date(
         chat.created_at || Date.now()
     ).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit"
     });
-
 
     message.innerHTML = `
         <div class="message-text"></div>
@@ -76,11 +82,8 @@ function displayMessage(chat) {
         </div>
     `;
 
-
-    // Add message safely
     message.querySelector(".message-text").textContent =
         chat.message;
-
 
     messages.appendChild(message);
 
@@ -100,7 +103,6 @@ async function loadMessages() {
 
         const data = await response.json();
 
-
         if (!response.ok) {
 
             console.error("Failed to load messages:", data);
@@ -108,9 +110,7 @@ async function loadMessages() {
             return;
         }
 
-
         messages.innerHTML = "";
-
 
         data.forEach((chat) => {
 
@@ -118,9 +118,7 @@ async function loadMessages() {
 
         });
 
-
         messages.scrollTop = messages.scrollHeight;
-
 
     } catch (error) {
 
@@ -130,7 +128,10 @@ async function loadMessages() {
 }
 
 
-// Load old messages when page opens
+// ======================================
+// LOAD OLD MESSAGES
+// ======================================
+
 loadMessages();
 
 
@@ -142,18 +143,16 @@ messageForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
-
     const messageText = messageInput.value.trim();
 
-
     if (!messageText) {
-        return;
-    }
 
+        return;
+
+    }
 
     // Temporary user ID
     const userId = 1;
-
 
     try {
 
@@ -173,9 +172,7 @@ messageForm.addEventListener("submit", async (event) => {
 
         });
 
-
         const data = await response.json();
-
 
         if (!response.ok) {
 
@@ -186,16 +183,16 @@ messageForm.addEventListener("submit", async (event) => {
 
 
         // ======================================
-        // SEND SAVED MESSAGE THROUGH WEBSOCKET
+        // SEND MESSAGE USING SOCKET.IO
         // ======================================
 
-        if (socket.readyState === WebSocket.OPEN) {
+        if (socket.connected) {
 
-            socket.send(JSON.stringify(data));
+            socket.emit("message", data);
 
         } else {
 
-            console.error("WebSocket is not connected");
+            console.error("Socket.IO is not connected");
 
         }
 
@@ -204,7 +201,6 @@ messageForm.addEventListener("submit", async (event) => {
         messageInput.value = "";
 
         messageInput.focus();
-
 
     } catch (error) {
 
