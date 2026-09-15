@@ -3,15 +3,25 @@ const { Server } = require("socket.io");
 const socketMiddleware = require("./middleware");
 const chatHandler = require("./handlers/chat");
 const personalChatHandler = require("./handlers/personal-chat");
+const groupChatHandler = require("./handlers/group-chat");
+
 
 function initializeSocket(server) {
 
     const io = new Server(server);
 
-    // Socket.IO authentication middleware
+
+    // ======================================
+    // SOCKET.IO AUTHENTICATION
+    // ======================================
+
     io.use(socketMiddleware);
 
-    // Handle client connections
+
+    // ======================================
+    // CONNECTION
+    // ======================================
+
     io.on("connection", (socket) => {
 
         console.log(
@@ -19,15 +29,37 @@ function initializeSocket(server) {
             socket.user.email
         );
 
-        console.log("Socket ID:", socket.id);
+        console.log(
+            "Socket ID:",
+            socket.id
+        );
 
-        // Normal chat handler
+
+        // ==================================
+        // NORMAL CHAT
+        // ==================================
+
         chatHandler(io, socket);
 
-        // Personal chat handler
+
+        // ==================================
+        // PERSONAL CHAT
+        // ==================================
+
         personalChatHandler(io, socket);
 
-        // User disconnected
+
+        // ==================================
+        // GROUP CHAT
+        // ==================================
+
+        groupChatHandler(io, socket);
+
+
+        // ==================================
+        // DISCONNECT
+        // ==================================
+
         socket.on("disconnect", () => {
 
             console.log(
@@ -37,7 +69,11 @@ function initializeSocket(server) {
 
         });
 
-        // Socket error
+
+        // ==================================
+        // SOCKET ERROR
+        // ==================================
+
         socket.on("error", (error) => {
 
             console.error(
@@ -49,7 +85,10 @@ function initializeSocket(server) {
 
     });
 
+
     return io;
+
 }
+
 
 module.exports = initializeSocket;
