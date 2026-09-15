@@ -36,12 +36,9 @@ const userEmail =
 
 if (!userEmail) {
 
-    alert(
-        "Please login first"
-    );
+    alert("Please login first");
 
-    window.location.href =
-        "login.html";
+    window.location.href = "login.html";
 
 }
 
@@ -68,7 +65,6 @@ function createRoomId(email1, email2) {
 
 // ======================================
 // CONNECT TO SOCKET.IO
-// WITH AUTHENTICATION
 // ======================================
 
 const socket = io(
@@ -147,7 +143,7 @@ socket.on("disconnect", () => {
 
 
 // ======================================
-// RECEIVE NORMAL GROUP CHAT MESSAGE
+// RECEIVE NORMAL GROUP MESSAGE
 // ======================================
 
 socket.on("message", (chat) => {
@@ -163,7 +159,7 @@ socket.on("message", (chat) => {
 
 
 // ======================================
-// RECEIVE PERSONAL CHAT MESSAGE
+// RECEIVE PERSONAL MESSAGE
 // ======================================
 
 socket.on("new-message", (data) => {
@@ -190,12 +186,13 @@ if (joinRoomBtn) {
 
     joinRoomBtn.addEventListener(
         "click",
-        () => {
+        async () => {
 
             const targetEmail =
                 userEmailInput.value.trim();
 
 
+            // Check email entered
             if (!targetEmail) {
 
                 alert(
@@ -207,6 +204,7 @@ if (joinRoomBtn) {
             }
 
 
+            // Prevent chatting with yourself
             if (
                 targetEmail ===
                 userEmail
@@ -221,31 +219,82 @@ if (joinRoomBtn) {
             }
 
 
-            // Create unique room ID
-            currentRoom =
-                createRoomId(
-                    userEmail,
-                    targetEmail
+            try {
+
+                // ==================================
+                // CHECK USER EXISTS IN DATABASE
+                // ==================================
+
+                const response =
+                    await fetch(
+                        `/api/auth/check-user?email=${encodeURIComponent(targetEmail)}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                // ==================================
+                // USER DOES NOT EXIST
+                // ==================================
+
+                if (!response.ok || !data.exists) {
+
+                    alert(
+                        "User not found. Please enter a registered user's email."
+                    );
+
+                    return;
+
+                }
+
+
+                // ==================================
+                // CREATE ROOM ID
+                // ==================================
+
+                currentRoom =
+                    createRoomId(
+                        userEmail,
+                        targetEmail
+                    );
+
+
+                // ==================================
+                // JOIN ROOM
+                // ==================================
+
+                socket.emit(
+                    "join_room",
+                    currentRoom
                 );
 
 
-            // Join the room
-            socket.emit(
-                "join_room",
-                currentRoom
-            );
+                console.log(
+                    "Joined personal chat room:",
+                    currentRoom
+                );
 
 
-            console.log(
-                "Joined personal chat room:",
-                currentRoom
-            );
+                if (roomStatus) {
+
+                    roomStatus.textContent =
+                        `Personal chat started with ${targetEmail}`;
+
+                }
 
 
-            if (roomStatus) {
+            } catch (error) {
 
-                roomStatus.textContent =
-                    `Personal chat started with ${targetEmail}`;
+                console.error(
+                    "Error checking user:",
+                    error
+                );
+
+                alert(
+                    "Unable to check user. Please try again."
+                );
 
             }
 
@@ -378,7 +427,7 @@ async function loadMessages() {
 
 
 // ======================================
-// LOAD OLD MESSAGES WHEN PAGE OPENS
+// LOAD OLD MESSAGES
 // ======================================
 
 loadMessages();
@@ -452,10 +501,6 @@ messageForm.addEventListener(
 
         try {
 
-            // ==================================
-            // SAVE MESSAGE TO DATABASE
-            // ==================================
-
             const response =
                 await fetch(
                     "/api/chat/messages",
@@ -497,10 +542,6 @@ messageForm.addEventListener(
             }
 
 
-            // ==================================
-            // SEND THROUGH SOCKET.IO
-            // ==================================
-
             if (socket.connected) {
 
                 socket.emit(
@@ -517,7 +558,6 @@ messageForm.addEventListener(
             }
 
 
-            // Clear input
             messageInput.value = "";
 
             messageInput.focus();
