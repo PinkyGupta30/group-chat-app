@@ -7,55 +7,145 @@ const app = express();
 
 const PORT = 3000;
 
-// Create HTTP server
+// ======================================
+// CREATE HTTP SERVER
+// ======================================
+
 const server = http.createServer(app);
 
-// Create Socket.IO server
+
+// ======================================
+// CREATE SOCKET.IO SERVER
+// ======================================
+
 const io = new Server(server);
 
-// Middleware
+
+// ======================================
+// MIDDLEWARE
+// ======================================
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend files
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
 
-// Auth routes
+
+// ======================================
+// SERVE FRONTEND FILES
+// ======================================
+
+app.use(
+    express.static(
+        path.join(__dirname, "public")
+    )
+);
+
+
+// ======================================
+// AUTH ROUTES
+// ======================================
+
 const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes);
 
-// Chat routes
+app.use(
+    "/api/auth",
+    authRoutes
+);
+
+
+// ======================================
+// CHAT ROUTES
+// ======================================
+
 const chatRoutes = require("./routes/chatRoutes");
-app.use("/api/chat", chatRoutes);
 
-// Home page
+app.use(
+    "/api/chat",
+    chatRoutes
+);
+
+
+// ======================================
+// HOME PAGE
+// ======================================
+
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "signup.html"));
+
+    res.sendFile(
+        path.join(
+            __dirname,
+            "public",
+            "signup.html"
+        )
+    );
+
 });
 
 
 // ======================================
-// SOCKET.IO
+// SOCKET.IO CONNECTION
 // ======================================
 
 io.on("connection", (socket) => {
 
-    console.log("User connected through Socket.IO:", socket.id);
+    console.log(
+        "User connected through Socket.IO:",
+        socket.id
+    );
 
-    // Receive message from frontend
+
+    // ==================================
+    // RECEIVE MESSAGE FROM CLIENT
+    // ==================================
+
     socket.on("message", (data) => {
 
-        console.log("New message received:", data);
+        console.log(
+            "New message received:",
+            data
+        );
 
-        // Send message to all connected users
-        io.emit("message", data);
+
+        // ==============================
+        // BROADCAST MESSAGE TO ALL USERS
+        // ==============================
+
+        io.emit(
+            "message",
+            data
+        );
 
     });
 
-    // User disconnected
+
+    // ==================================
+    // USER DISCONNECTED
+    // ==================================
+
     socket.on("disconnect", () => {
 
-        console.log("User disconnected:", socket.id);
+        console.log(
+            "User disconnected:",
+            socket.id
+        );
+
+    });
+
+
+    // ==================================
+    // SOCKET ERROR
+    // ==================================
+
+    socket.on("error", (error) => {
+
+        console.error(
+            "Socket.IO error:",
+            error
+        );
 
     });
 
@@ -68,6 +158,8 @@ io.on("connection", (socket) => {
 
 server.listen(PORT, () => {
 
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(
+        `Server running at http://localhost:${PORT}`
+    );
 
 });
