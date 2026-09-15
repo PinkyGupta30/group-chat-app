@@ -7,6 +7,7 @@ const app = express();
 
 const PORT = 3000;
 
+
 // ======================================
 // CREATE HTTP SERVER
 // ======================================
@@ -87,36 +88,95 @@ app.get("/", (req, res) => {
 
 
 // ======================================
+// SOCKET.IO AUTHENTICATION MIDDLEWARE
+// ======================================
+
+io.use((socket, next) => {
+
+    // Get email sent by the frontend
+    const email = socket.handshake.auth.email;
+
+
+    // Check authentication
+    if (!email) {
+
+        console.log(
+            "Socket connection rejected: Email missing"
+        );
+
+        return next(
+            new Error("Authentication required")
+        );
+
+    }
+
+
+    // Store authenticated user
+    // inside the socket object
+    socket.user = {
+        email: email
+    };
+
+
+    console.log(
+        "Socket authentication successful:",
+        email
+    );
+
+
+    next();
+
+});
+
+
+// ======================================
 // SOCKET.IO CONNECTION
 // ======================================
 
 io.on("connection", (socket) => {
 
     console.log(
-        "User connected through Socket.IO:",
+        "Authenticated user connected:",
+        socket.user.email
+    );
+
+    console.log(
+        "Socket ID:",
         socket.id
     );
 
 
     // ==================================
-    // RECEIVE MESSAGE FROM CLIENT
+    // RECEIVE MESSAGE
     // ==================================
 
     socket.on("message", (data) => {
 
         console.log(
-            "New message received:",
+            "Message received from:",
+            socket.user.email
+        );
+
+        console.log(
+            "Message:",
             data
         );
 
 
-        // ==============================
-        // BROADCAST MESSAGE TO ALL USERS
-        // ==============================
+        // Add authenticated sender
+        const messageData = {
 
+            ...data,
+
+            sender: socket.user.email
+
+        };
+
+
+        // Broadcast message to all users
         io.emit(
             "message",
-            data
+            messageData
         );
 
     });
@@ -130,7 +190,7 @@ io.on("connection", (socket) => {
 
         console.log(
             "User disconnected:",
-            socket.id
+            socket.user.email
         );
 
     });
