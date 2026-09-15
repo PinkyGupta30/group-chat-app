@@ -9,6 +9,20 @@ const messages =
 
 
 // ======================================
+// PERSONAL CHAT ELEMENTS
+// ======================================
+
+const userEmailInput =
+    document.getElementById("userEmailInput");
+
+const joinRoomBtn =
+    document.getElementById("joinRoomBtn");
+
+const roomStatus =
+    document.getElementById("roomStatus");
+
+
+// ======================================
 // GET LOGGED-IN USER
 // ======================================
 
@@ -28,6 +42,26 @@ if (!userEmail) {
 
     window.location.href =
         "login.html";
+
+}
+
+
+// ======================================
+// CURRENT PERSONAL CHAT ROOM
+// ======================================
+
+let currentRoom = null;
+
+
+// ======================================
+// CREATE UNIQUE ROOM ID
+// ======================================
+
+function createRoomId(email1, email2) {
+
+    return [email1, email2]
+        .sort()
+        .join("-");
 
 }
 
@@ -113,7 +147,7 @@ socket.on("disconnect", () => {
 
 
 // ======================================
-// RECEIVE LIVE MESSAGE
+// RECEIVE NORMAL GROUP CHAT MESSAGE
 // ======================================
 
 socket.on("message", (chat) => {
@@ -126,6 +160,99 @@ socket.on("message", (chat) => {
     displayMessage(chat);
 
 });
+
+
+// ======================================
+// RECEIVE PERSONAL CHAT MESSAGE
+// ======================================
+
+socket.on("new-message", (data) => {
+
+    console.log(
+        "Personal message received:",
+        data
+    );
+
+    displayMessage({
+        sender: data.username,
+        message: data.message,
+        created_at: new Date()
+    });
+
+});
+
+
+// ======================================
+// JOIN PERSONAL CHAT ROOM
+// ======================================
+
+if (joinRoomBtn) {
+
+    joinRoomBtn.addEventListener(
+        "click",
+        () => {
+
+            const targetEmail =
+                userEmailInput.value.trim();
+
+
+            if (!targetEmail) {
+
+                alert(
+                    "Please enter a user email"
+                );
+
+                return;
+
+            }
+
+
+            if (
+                targetEmail ===
+                userEmail
+            ) {
+
+                alert(
+                    "You cannot chat with yourself"
+                );
+
+                return;
+
+            }
+
+
+            // Create unique room ID
+            currentRoom =
+                createRoomId(
+                    userEmail,
+                    targetEmail
+                );
+
+
+            // Join the room
+            socket.emit(
+                "join_room",
+                currentRoom
+            );
+
+
+            console.log(
+                "Joined personal chat room:",
+                currentRoom
+            );
+
+
+            if (roomStatus) {
+
+                roomStatus.textContent =
+                    `Personal chat started with ${targetEmail}`;
+
+            }
+
+        }
+    );
+
+}
 
 
 // ======================================
@@ -173,7 +300,9 @@ function displayMessage(chat) {
     message
         .querySelector(".message-user")
         .textContent =
-            chat.sender || chat.user_id || "User";
+            chat.sender ||
+            chat.user_id ||
+            "User";
 
 
     // Display message safely
@@ -278,7 +407,44 @@ messageForm.addEventListener(
 
 
         // ==================================
-        // TEMPORARY USER ID
+        // PERSONAL CHAT
+        // ==================================
+
+        if (currentRoom) {
+
+            if (socket.connected) {
+
+                socket.emit(
+                    "new-message",
+                    {
+                        message:
+                            messageText,
+
+                        roomName:
+                            currentRoom
+                    }
+                );
+
+
+                messageInput.value = "";
+
+                messageInput.focus();
+
+            } else {
+
+                console.error(
+                    "Socket.IO is not connected"
+                );
+
+            }
+
+            return;
+
+        }
+
+
+        // ==================================
+        // NORMAL GROUP CHAT
         // ==================================
 
         const userId = 1;
@@ -304,9 +470,11 @@ messageForm.addEventListener(
 
                         body: JSON.stringify({
 
-                            user_id: userId,
+                            user_id:
+                                userId,
 
-                            message: messageText
+                            message:
+                                messageText
 
                         })
 

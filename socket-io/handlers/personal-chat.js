@@ -2,6 +2,7 @@ module.exports = (io, socket) => {
 
     // Join a personal chat room
     socket.on("join_room", (roomName) => {
+
         socket.join(roomName);
 
         console.log(
@@ -11,7 +12,8 @@ module.exports = (io, socket) => {
         );
     });
 
-    // Send a message to a specific room
+
+    // Receive and send personal message
     socket.on("new-message", ({ message, roomName }) => {
 
         console.log(
@@ -21,6 +23,7 @@ module.exports = (io, socket) => {
             message
         );
 
+        // Send message only to users in this room
         io.to(roomName).emit("new-message", {
             username: socket.user.email,
             message: message

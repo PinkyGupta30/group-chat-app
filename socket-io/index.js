@@ -5,6 +5,7 @@ const chatHandler = require("./handlers/chat");
 const personalChatHandler = require("./handlers/personal-chat");
 
 function initializeSocket(server) {
+
     const io = new Server(server);
 
     // Socket.IO authentication middleware
@@ -12,22 +13,40 @@ function initializeSocket(server) {
 
     // Handle client connections
     io.on("connection", (socket) => {
-        console.log("Authenticated user connected:", socket.user.email);
+
+        console.log(
+            "Authenticated user connected:",
+            socket.user.email
+        );
+
         console.log("Socket ID:", socket.id);
 
-        // Chat events
+        // Normal chat handler
         chatHandler(io, socket);
+
+        // Personal chat handler
         personalChatHandler(io, socket);
 
-        // Disconnect
+        // User disconnected
         socket.on("disconnect", () => {
-            console.log("User disconnected:", socket.user.email);
+
+            console.log(
+                "User disconnected:",
+                socket.user.email
+            );
+
         });
 
         // Socket error
         socket.on("error", (error) => {
-            console.error("Socket.IO error:", error);
+
+            console.error(
+                "Socket.IO error:",
+                error
+            );
+
         });
+
     });
 
     return io;
