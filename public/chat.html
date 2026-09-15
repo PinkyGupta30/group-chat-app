@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -9,150 +10,155 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Socket.IO Chat</title>
+    <title>Group Chat</title>
+
 
     <style>
 
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            margin: 0;
+
             font-family: Arial, sans-serif;
-            background: #2196d3;
-        }
 
-        /* ============================== */
-        /* HEADER */
-        /* ============================== */
+            background: #f4f4f4;
 
-        header {
-            background: #000;
-            color: white;
-            padding: 20px;
-        }
-
-        header h2 {
             margin: 0;
+
+            padding: 20px;
+
         }
 
-        /* ============================== */
-        /* MAIN CONTAINER */
-        /* ============================== */
 
         .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 30px auto;
-        }
 
-        /* ============================== */
-        /* PERSONAL CHAT */
-        /* ============================== */
+            max-width: 800px;
 
-        .personal-chat {
+            margin: auto;
+
             background: white;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+        }
+
+
+        h1 {
+
+            text-align: center;
+
+        }
+
+
+        .section {
+
+            margin-bottom: 20px;
+
             padding: 15px;
+
+            border: 1px solid #ddd;
+
             border-radius: 8px;
-            margin-bottom: 15px;
+
         }
 
-        .personal-chat input {
-            width: 60%;
+
+        input {
+
             padding: 10px;
+
+            margin: 5px;
+
         }
 
-        .personal-chat button {
+
+        button {
+
             padding: 10px 15px;
+
             cursor: pointer;
+
         }
 
-        #roomStatus {
-            color: green;
-            margin-bottom: 0;
-        }
-
-        /* ============================== */
-        /* GROUP CHAT */
-        /* ============================== */
-
-        .group-chat {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .group-chat input {
-            width: 40%;
-            padding: 10px;
-        }
-
-        .group-chat button {
-            padding: 10px 15px;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-
-        #groupStatus {
-            color: green;
-            margin-bottom: 0;
-        }
-
-        /* ============================== */
-        /* MESSAGES */
-        /* ============================== */
 
         #messages {
-            background: white;
+
             height: 400px;
+
             overflow-y: auto;
-            padding: 20px;
-            border-radius: 8px;
+
+            border: 1px solid #ddd;
+
+            padding: 15px;
+
             margin-bottom: 15px;
+
         }
+
 
         .message {
-            background: #e5e5e5;
+
+            background: #f1f1f1;
+
             padding: 10px;
+
             margin-bottom: 10px;
+
             border-radius: 8px;
-            max-width: 70%;
+
         }
+
 
         .message-user {
+
             font-weight: bold;
+
             margin-bottom: 5px;
+
         }
+
 
         .message-text {
+
             margin-bottom: 5px;
+
         }
+
 
         .message-time {
+
             font-size: 12px;
-            color: #777;
+
+            color: gray;
+
         }
 
-        /* ============================== */
-        /* MESSAGE FORM */
-        /* ============================== */
 
-        #messageForm {
-            display: flex;
-            gap: 10px;
+        .media-image {
+
+            max-width: 300px;
+
+            max-height: 300px;
+
+            display: block;
+
+            margin-top: 8px;
+
+            border-radius: 8px;
+
         }
 
-        #messageInput {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
-        }
 
-        #messageForm button {
-            padding: 12px 25px;
-            cursor: pointer;
+        .media-video {
+
+            max-width: 400px;
+
+            max-height: 300px;
+
+            display: block;
+
+            margin-top: 8px;
+
         }
 
     </style>
@@ -163,119 +169,103 @@
 <body>
 
 
+<div class="container">
+
+    <h1>Group Chat</h1>
+
+
     <!-- ============================== -->
-    <!-- HEADER -->
+    <!-- PERSONAL CHAT -->
     <!-- ============================== -->
 
-    <header>
+    <div class="section">
 
-        <h2>
-            Socket.IO Chat
-        </h2>
+        <h3>Personal Chat</h3>
 
-    </header>
+        <input
+            type="email"
+            id="userEmailInput"
+            placeholder="Enter user email"
+        >
 
+        <button id="joinRoomBtn">
+            Start Personal Chat
+        </button>
 
-    <div class="container">
-
-
-        <!-- ============================== -->
-        <!-- PERSONAL CHAT -->
-        <!-- ============================== -->
-
-        <div class="personal-chat">
-
-            <input
-                type="text"
-                id="userEmailInput"
-                placeholder="Enter user email"
-            >
-
-            <button
-                type="button"
-                id="joinRoomBtn"
-            >
-                Start Personal Chat
-            </button>
-
-            <p id="roomStatus"></p>
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- GROUP CHAT -->
-        <!-- ============================== -->
-
-        <div class="group-chat">
-
-            <input
-                type="text"
-                id="groupNameInput"
-                placeholder="Enter group name"
-            >
-
-            <button
-                type="button"
-                id="joinGroupBtn"
-            >
-                Create / Join Group
-            </button>
-
-            <button
-                type="button"
-                id="leaveGroupBtn"
-            >
-                Leave Group
-            </button>
-
-            <p id="groupStatus"></p>
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- MESSAGES -->
-        <!-- ============================== -->
-
-        <div id="messages"></div>
-
-
-        <!-- ============================== -->
-        <!-- SEND MESSAGE -->
-        <!-- ============================== -->
-
-        <form id="messageForm">
-
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="Type a message here"
-                autocomplete="off"
-            >
-
-            <button type="submit">
-                Send
-            </button>
-
-        </form>
-
+        <p id="roomStatus"></p>
 
     </div>
 
 
     <!-- ============================== -->
-    <!-- SOCKET.IO CLIENT -->
+    <!-- GROUP CHAT -->
     <!-- ============================== -->
 
-    <script src="/socket.io/socket.io.js"></script>
+    <div class="section">
+
+        <h3>Group Chat</h3>
+
+        <input
+            type="text"
+            id="groupNameInput"
+            placeholder="Enter group name"
+        >
+
+        <button id="joinGroupBtn">
+            Create / Join Group
+        </button>
+
+        <button id="leaveGroupBtn">
+            Leave Group
+        </button>
+
+        <p id="groupStatus"></p>
+
+    </div>
 
 
     <!-- ============================== -->
-    <!-- APPLICATION JAVASCRIPT -->
+    <!-- MESSAGES -->
     <!-- ============================== -->
 
-    <script src="script.js"></script>
+    <div id="messages"></div>
+
+
+    <!-- ============================== -->
+    <!-- MESSAGE FORM -->
+    <!-- ============================== -->
+
+    <form id="messageForm">
+
+        <input
+            type="file"
+            id="mediaInput"
+        >
+
+        <input
+            type="text"
+            id="messageInput"
+            placeholder="Type a message..."
+        >
+
+        <button type="submit">
+            Send
+        </button>
+
+    </form>
+
+
+</div>
+
+
+<!-- Socket.IO -->
+
+<script src="/socket.io/socket.io.js"></script>
+
+
+<!-- Main JavaScript -->
+
+<script src="script.js"></script>
 
 
 </body>

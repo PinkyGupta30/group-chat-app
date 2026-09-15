@@ -5,36 +5,51 @@
 const messageForm =
     document.getElementById("messageForm");
 
+
 const messageInput =
     document.getElementById("messageInput");
+
 
 const messages =
     document.getElementById("messages");
 
 
-// Personal chat elements
+// Personal chat
+
 const userEmailInput =
     document.getElementById("userEmailInput");
 
+
 const joinRoomBtn =
     document.getElementById("joinRoomBtn");
+
 
 const roomStatus =
     document.getElementById("roomStatus");
 
 
-// Group chat elements
+// Group chat
+
 const groupNameInput =
     document.getElementById("groupNameInput");
+
 
 const joinGroupBtn =
     document.getElementById("joinGroupBtn");
 
+
 const leaveGroupBtn =
     document.getElementById("leaveGroupBtn");
 
+
 const groupStatus =
     document.getElementById("groupStatus");
+
+
+// Media
+
+const mediaInput =
+    document.getElementById("mediaInput");
 
 
 // ======================================
@@ -55,6 +70,7 @@ if (!userEmail) {
 
     window.location.href =
         "login.html";
+
 }
 
 
@@ -71,9 +87,15 @@ let currentGroup = null;
 // CREATE PERSONAL ROOM ID
 // ======================================
 
-function createRoomId(email1, email2) {
+function createRoomId(
+    email1,
+    email2
+) {
 
-    return [email1, email2]
+    return [
+        email1,
+        email2
+    ]
         .sort()
         .join("-");
 
@@ -81,152 +103,198 @@ function createRoomId(email1, email2) {
 
 
 // ======================================
-// CONNECT TO SOCKET.IO
+// CONNECT SOCKET.IO
 // ======================================
 
-const socket = io(
-    "http://localhost:3000",
-    {
-        auth: {
-            email: userEmail
+const socket =
+    io(
+        "http://localhost:3000",
+        {
+
+            auth: {
+
+                email:
+                    userEmail
+
+            }
+
         }
+    );
+
+
+// ======================================
+// CONNECTED
+// ======================================
+
+socket.on(
+    "connect",
+    () => {
+
+        console.log(
+            "Connected to Socket.IO server"
+        );
+
+        console.log(
+            "Socket ID:",
+            socket.id
+        );
+
+        console.log(
+            "Authenticated user:",
+            userEmail
+        );
+
     }
 );
 
 
 // ======================================
-// SOCKET CONNECTED
+// CONNECTION ERROR
 // ======================================
 
-socket.on("connect", () => {
+socket.on(
+    "connect_error",
+    (error) => {
 
-    console.log(
-        "Connected to Socket.IO server"
-    );
-
-    console.log(
-        "Socket ID:",
-        socket.id
-    );
-
-    console.log(
-        "Authenticated user:",
-        userEmail
-    );
-
-});
-
-
-// ======================================
-// SOCKET AUTH ERROR
-// ======================================
-
-socket.on("connect_error", (error) => {
-
-    console.error(
-        "Socket.IO connection error:",
-        error.message
-    );
-
-
-    if (
-        error.message ===
-        "Authentication required"
-    ) {
-
-        localStorage.removeItem(
-            "userEmail"
+        console.error(
+            "Socket.IO connection error:",
+            error.message
         );
 
-        window.location.href =
-            "login.html";
+
+        if (
+            error.message ===
+            "Authentication required"
+        ) {
+
+            localStorage.removeItem(
+                "userEmail"
+            );
+
+            window.location.href =
+                "login.html";
+
+        }
+
     }
-
-});
-
-
-// ======================================
-// SOCKET DISCONNECTED
-// ======================================
-
-socket.on("disconnect", () => {
-
-    console.log(
-        "Socket.IO connection closed"
-    );
-
-});
+);
 
 
 // ======================================
-// NORMAL GROUP CHAT MESSAGE
+// DISCONNECT
 // ======================================
 
-socket.on("message", (chat) => {
+socket.on(
+    "disconnect",
+    () => {
 
-    console.log(
-        "Message received:",
-        chat
-    );
+        console.log(
+            "Socket.IO connection closed"
+        );
 
-    displayMessage(chat);
-
-});
-
-
-// ======================================
-// PERSONAL CHAT MESSAGE
-// ======================================
-
-socket.on("new-message", (data) => {
-
-    console.log(
-        "Personal message received:",
-        data
-    );
-
-    displayMessage({
-
-        sender:
-            data.username,
-
-        message:
-            data.message,
-
-        created_at:
-            new Date()
-
-    });
-
-});
+    }
+);
 
 
 // ======================================
-// GROUP CHAT MESSAGE
+// NORMAL GROUP MESSAGE
 // ======================================
 
-socket.on("group_message", (data) => {
+socket.on(
+    "message",
+    (chat) => {
 
-    console.log(
-        "Group message received:",
-        data
-    );
+        console.log(
+            "Message received:",
+            chat
+        );
+
+        displayMessage(chat);
+
+    }
+);
 
 
-    displayMessage({
+// ======================================
+// PERSONAL MESSAGE
+// ======================================
 
-        sender:
-            data.username,
+socket.on(
+    "new-message",
+    (data) => {
 
-        message:
-            data.message,
+        console.log(
+            "Personal message received:",
+            data
+        );
 
-        created_at:
-            new Date()
 
-    });
+        displayMessage({
 
-});
+            sender:
+                data.username,
+
+            message:
+                data.message,
+
+            created_at:
+                new Date()
+
+        });
+
+    }
+);
+
+
+// ======================================
+// GROUP MESSAGE
+// ======================================
+
+socket.on(
+    "group_message",
+    (data) => {
+
+        console.log(
+            "Group message received:",
+            data
+        );
+
+
+        displayMessage({
+
+            sender:
+                data.username,
+
+            message:
+                data.message,
+
+            created_at:
+                new Date()
+
+        });
+
+    }
+);
+
+
+// ======================================
+// MEDIA MESSAGE
+// ======================================
+
+socket.on(
+    "media-message",
+    (data) => {
+
+        console.log(
+            "Media received:",
+            data
+        );
+
+
+        displayMediaMessage(data);
+
+    }
+);
 
 
 // ======================================
@@ -243,7 +311,6 @@ if (joinRoomBtn) {
                 userEmailInput.value.trim();
 
 
-            // Check email
             if (!targetEmail) {
 
                 alert(
@@ -251,10 +318,10 @@ if (joinRoomBtn) {
                 );
 
                 return;
+
             }
 
 
-            // Prevent self chat
             if (
                 targetEmail ===
                 userEmail
@@ -265,12 +332,12 @@ if (joinRoomBtn) {
                 );
 
                 return;
+
             }
 
 
             try {
 
-                // Check user in database
                 const response =
                     await fetch(
                         `/api/auth/check-user?email=${encodeURIComponent(targetEmail)}`
@@ -287,14 +354,14 @@ if (joinRoomBtn) {
                 ) {
 
                     alert(
-                        "User not found. Please enter a registered user's email."
+                        "User not found"
                     );
 
                     return;
+
                 }
 
 
-                // Create room ID
                 currentRoom =
                     createRoomId(
                         userEmail,
@@ -302,18 +369,6 @@ if (joinRoomBtn) {
                     );
 
 
-                // Leave current personal room
-                if (currentRoom) {
-
-                    socket.emit(
-                        "leave_room",
-                        currentRoom
-                    );
-
-                }
-
-
-                // Join new personal room
                 socket.emit(
                     "join_room",
                     currentRoom
@@ -321,7 +376,7 @@ if (joinRoomBtn) {
 
 
                 console.log(
-                    "Joined personal chat room:",
+                    "Joined personal chat:",
                     currentRoom
                 );
 
@@ -333,15 +388,17 @@ if (joinRoomBtn) {
 
                 }
 
-            } catch (error) {
+            }
+            catch (error) {
 
                 console.error(
                     "Error checking user:",
                     error
                 );
 
+
                 alert(
-                    "Unable to check user. Please try again."
+                    "Unable to check user"
                 );
 
             }
@@ -366,7 +423,6 @@ if (joinGroupBtn) {
                 groupNameInput.value.trim();
 
 
-            // Validate group name
             if (!groupName) {
 
                 alert(
@@ -374,10 +430,10 @@ if (joinGroupBtn) {
                 );
 
                 return;
+
             }
 
 
-            // Leave previous group
             if (
                 currentGroup &&
                 currentGroup !== groupName
@@ -391,12 +447,10 @@ if (joinGroupBtn) {
             }
 
 
-            // Set current group
             currentGroup =
                 groupName;
 
 
-            // Join group
             socket.emit(
                 "join_group",
                 groupName,
@@ -420,7 +474,8 @@ if (joinGroupBtn) {
 
                         }
 
-                    } else {
+                    }
+                    else {
 
                         alert(
                             response?.message ||
@@ -461,17 +516,12 @@ if (leaveGroupBtn) {
                 );
 
                 return;
+
             }
 
 
             socket.emit(
                 "leave_group",
-                currentGroup
-            );
-
-
-            console.log(
-                "Left group:",
                 currentGroup
             );
 
@@ -493,7 +543,7 @@ if (leaveGroupBtn) {
 
 
 // ======================================
-// DISPLAY MESSAGE
+// DISPLAY NORMAL MESSAGE
 // ======================================
 
 function displayMessage(chat) {
@@ -503,19 +553,22 @@ function displayMessage(chat) {
 
 
     message.classList.add(
-        "message",
-        "sent"
+        "message"
     );
 
 
     const messageTime =
         new Date(
-            chat.created_at || Date.now()
+            chat.created_at ||
+            Date.now()
         ).toLocaleTimeString(
             [],
             {
+
                 hour: "2-digit",
+
                 minute: "2-digit"
+
             }
         );
 
@@ -533,23 +586,206 @@ function displayMessage(chat) {
     `;
 
 
-    // Display sender safely
     message
-        .querySelector(".message-user")
+        .querySelector(
+            ".message-user"
+        )
         .textContent =
             chat.sender ||
             chat.user_id ||
             "User";
 
 
-    // Display message safely
     message
-        .querySelector(".message-text")
+        .querySelector(
+            ".message-text"
+        )
         .textContent =
             chat.message;
 
 
-    messages.appendChild(message);
+    messages.appendChild(
+        message
+    );
+
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+
+// ======================================
+// DISPLAY MEDIA MESSAGE
+// ======================================
+
+function displayMediaMessage(data) {
+
+    const message =
+        document.createElement("div");
+
+
+    message.classList.add(
+        "message"
+    );
+
+
+    const time =
+        new Date().toLocaleTimeString(
+            [],
+            {
+
+                hour:
+                    "2-digit",
+
+                minute:
+                    "2-digit"
+
+            }
+        );
+
+
+    const userDiv =
+        document.createElement("div");
+
+
+    userDiv.className =
+        "message-user";
+
+
+    userDiv.textContent =
+        data.sender;
+
+
+    message.appendChild(
+        userDiv
+    );
+
+
+    // IMAGE
+
+    if (
+        data.fileType &&
+        data.fileType.startsWith(
+            "image/"
+        )
+    ) {
+
+        const image =
+            document.createElement("img");
+
+
+        image.src =
+            data.url;
+
+
+        image.alt =
+            data.fileName;
+
+
+        image.className =
+            "media-image";
+
+
+        message.appendChild(
+            image
+        );
+
+    }
+
+
+    // VIDEO
+
+    else if (
+        data.fileType &&
+        data.fileType.startsWith(
+            "video/"
+        )
+    ) {
+
+        const video =
+            document.createElement("video");
+
+
+        video.controls =
+            true;
+
+
+        video.className =
+            "media-video";
+
+
+        const source =
+            document.createElement("source");
+
+
+        source.src =
+            data.url;
+
+
+        source.type =
+            data.fileType;
+
+
+        video.appendChild(
+            source
+        );
+
+
+        message.appendChild(
+            video
+        );
+
+    }
+
+
+    // OTHER FILE
+
+    else {
+
+        const link =
+            document.createElement("a");
+
+
+        link.href =
+            data.url;
+
+
+        link.target =
+            "_blank";
+
+
+        link.textContent =
+            `Open ${data.fileName}`;
+
+
+        message.appendChild(
+            link
+        );
+
+    }
+
+
+    const timeDiv =
+        document.createElement("div");
+
+
+    timeDiv.className =
+        "message-time";
+
+
+    timeDiv.textContent =
+        time;
+
+
+    message.appendChild(
+        timeDiv
+    );
+
+
+    messages.appendChild(
+        message
+    );
 
 
     messages.scrollTop =
@@ -584,24 +820,29 @@ async function loadMessages() {
             );
 
             return;
+
         }
 
 
         messages.innerHTML = "";
 
 
-        data.forEach((chat) => {
+        data.forEach(
+            (chat) => {
 
-            displayMessage(chat);
+                displayMessage(
+                    chat
+                );
 
-        });
+            }
+        );
 
 
         messages.scrollTop =
             messages.scrollHeight;
 
-
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(
             "Error loading messages:",
@@ -613,15 +854,11 @@ async function loadMessages() {
 }
 
 
-// ======================================
-// LOAD OLD MESSAGES
-// ======================================
-
 loadMessages();
 
 
 // ======================================
-// SEND MESSAGE
+// SEND MESSAGE / MEDIA
 // ======================================
 
 messageForm.addEventListener(
@@ -635,9 +872,139 @@ messageForm.addEventListener(
             messageInput.value.trim();
 
 
+        // ==================================
+        // MEDIA UPLOAD
+        // ==================================
+
+        if (
+            mediaInput &&
+            mediaInput.files.length > 0
+        ) {
+
+            const file =
+                mediaInput.files[0];
+
+
+            const roomName =
+                currentGroup ||
+                currentRoom;
+
+
+            if (!roomName) {
+
+                alert(
+                    "Please join a group or personal chat first."
+                );
+
+                return;
+
+            }
+
+
+            console.log(
+                "Uploading file:",
+                file.name
+            );
+
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "media",
+                file
+            );
+
+
+            formData.append(
+                "roomName",
+                roomName
+            );
+
+
+            formData.append(
+                "sender",
+                userEmail
+            );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/media/upload",
+                        {
+
+                            method:
+                                "POST",
+
+                            body:
+                                formData
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Upload response:",
+                    data
+                );
+
+
+                if (!response.ok) {
+
+                    alert(
+                        data.message ||
+                        "Upload failed"
+                    );
+
+                    return;
+
+                }
+
+
+                mediaInput.value =
+                    "";
+
+
+                messageInput.value =
+                    "";
+
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Upload error:",
+                    error
+                );
+
+
+                alert(
+                    "Failed to upload file"
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        // ==================================
+        // EMPTY TEXT
+        // ==================================
+
         if (!messageText) {
 
             return;
+
         }
 
 
@@ -654,17 +1021,20 @@ messageForm.addEventListener(
                 );
 
                 return;
+
             }
 
 
             socket.emit(
                 "group_message",
                 {
+
                     message:
                         messageText,
 
                     groupName:
                         currentGroup
+
                 },
                 (response) => {
 
@@ -677,9 +1047,12 @@ messageForm.addEventListener(
             );
 
 
-            messageInput.value = "";
+            messageInput.value =
+                "";
+
 
             messageInput.focus();
+
 
             return;
 
@@ -699,24 +1072,30 @@ messageForm.addEventListener(
                 );
 
                 return;
+
             }
 
 
             socket.emit(
                 "new-message",
                 {
+
                     message:
                         messageText,
 
                     roomName:
                         currentRoom
+
                 }
             );
 
 
-            messageInput.value = "";
+            messageInput.value =
+                "";
+
 
             messageInput.focus();
+
 
             return;
 
@@ -737,22 +1116,26 @@ messageForm.addEventListener(
                     "/api/chat/messages",
                     {
 
-                        method: "POST",
+                        method:
+                            "POST",
 
                         headers: {
+
                             "Content-Type":
                                 "application/json"
+
                         },
 
-                        body: JSON.stringify({
+                        body:
+                            JSON.stringify({
 
-                            user_id:
-                                userId,
+                                user_id:
+                                    userId,
 
-                            message:
-                                messageText
+                                message:
+                                    messageText
 
-                        })
+                            })
 
                     }
                 );
@@ -769,6 +1152,7 @@ messageForm.addEventListener(
                 );
 
                 return;
+
             }
 
 
@@ -779,21 +1163,17 @@ messageForm.addEventListener(
                     data
                 );
 
-            } else {
-
-                console.error(
-                    "Socket.IO is not connected"
-                );
-
             }
 
 
-            messageInput.value = "";
+            messageInput.value =
+                "";
+
 
             messageInput.focus();
 
-
-        } catch (error) {
+        }
+        catch (error) {
 
             console.error(
                 "Error sending message:",
