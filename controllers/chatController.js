@@ -1,4 +1,5 @@
 const db = require("../config/database");
+const { getSuggestions } = require("../services/geminiService");
 
 
 // ======================================
@@ -9,24 +10,19 @@ exports.sendMessage = (req, res) => {
 
     const { user_id, message } = req.body || {};
 
-
     // Validate input
     if (!user_id || !message) {
 
         return res.status(400).json({
-
             message: "User ID and message are required"
-
         });
 
     }
-
 
     const sql = `
         INSERT INTO messages (user_id, message)
         VALUES (?, ?)
     `;
-
 
     db.query(
         sql,
@@ -41,13 +37,10 @@ exports.sendMessage = (req, res) => {
                 );
 
                 return res.status(500).json({
-
                     message: "Failed to save message"
-
                 });
 
             }
-
 
             // ======================================
             // RETURN ACTUAL CHAT MESSAGE
@@ -64,7 +57,6 @@ exports.sendMessage = (req, res) => {
                 created_at: new Date()
 
             };
-
 
             return res.status(201).json(
                 chatMessage
@@ -88,7 +80,6 @@ exports.getMessages = (req, res) => {
         ORDER BY created_at ASC
     `;
 
-
     db.query(
         sql,
         (err, results) => {
@@ -101,13 +92,10 @@ exports.getMessages = (req, res) => {
                 );
 
                 return res.status(500).json({
-
                     message: "Failed to fetch messages"
-
                 });
 
             }
-
 
             return res.status(200).json(
                 results
@@ -115,5 +103,46 @@ exports.getMessages = (req, res) => {
 
         }
     );
+
+};
+
+
+// ======================================
+// AI SUGGESTIONS
+// ======================================
+
+exports.getAISuggestions = async (req, res) => {
+
+    try {
+
+        const { message } = req.body;
+
+        if (!message || !message.trim()) {
+
+            return res.status(400).json({
+                message: "Message is required"
+            });
+
+        }
+
+        const suggestions =
+            await getSuggestions(message);
+
+        return res.status(200).json(
+            suggestions
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Gemini AI error:",
+            error
+        );
+
+        return res.status(500).json({
+            message: "Failed to generate AI suggestions"
+        });
+
+    }
 
 };

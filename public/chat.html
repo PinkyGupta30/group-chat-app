@@ -12,153 +12,135 @@
 
     <title>Group Chat</title>
 
-
     <style>
 
         body {
-
             font-family: Arial, sans-serif;
-
             background: #f4f4f4;
-
             margin: 0;
-
             padding: 20px;
-
         }
-
 
         .container {
-
             max-width: 800px;
-
             margin: auto;
-
             background: white;
-
             padding: 20px;
-
             border-radius: 10px;
-
         }
-
 
         h1 {
-
             text-align: center;
-
         }
-
 
         .section {
-
             margin-bottom: 20px;
-
             padding: 15px;
-
             border: 1px solid #ddd;
-
             border-radius: 8px;
-
         }
-
 
         input {
-
             padding: 10px;
-
             margin: 5px;
-
         }
-
 
         button {
-
             padding: 10px 15px;
-
             cursor: pointer;
-
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #f5f5f5;
         }
 
+        button:hover {
+            background: #e8e8e8;
+        }
 
         #messages {
-
             height: 400px;
-
             overflow-y: auto;
-
             border: 1px solid #ddd;
-
             padding: 15px;
-
             margin-bottom: 15px;
-
         }
-
 
         .message {
-
             background: #f1f1f1;
-
             padding: 10px;
-
             margin-bottom: 10px;
-
             border-radius: 8px;
-
         }
-
 
         .message-user {
-
             font-weight: bold;
-
             margin-bottom: 5px;
-
         }
-
 
         .message-text {
-
             margin-bottom: 5px;
-
         }
-
 
         .message-time {
-
             font-size: 12px;
-
             color: gray;
-
         }
-
 
         .media-image {
-
             max-width: 300px;
-
             max-height: 300px;
-
             display: block;
-
             margin-top: 8px;
-
             border-radius: 8px;
+        }
 
+        .media-video {
+            max-width: 400px;
+            max-height: 300px;
+            display: block;
+            margin-top: 8px;
         }
 
 
-        .media-video {
+        /* ============================== */
+        /* AI SUGGESTIONS */
+        /* ============================== */
 
-            max-width: 400px;
+        #aiSuggestions {
+            margin-bottom: 10px;
+        }
 
-            max-height: 300px;
+        .ai-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+        }
 
-            display: block;
+        #typingSuggestions,
+        #smartReplies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-            margin-top: 8px;
+        .ai-button {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            padding: 7px 12px;
+            font-size: 13px;
+        }
 
+        .ai-button:hover {
+            background: #ddd;
+        }
+
+        #aiLoading {
+            display: none;
+            font-size: 13px;
+            color: gray;
+            margin-top: 5px;
         }
 
     </style>
@@ -229,6 +211,42 @@
     <!-- ============================== -->
 
     <div id="messages"></div>
+
+
+    <!-- ============================== -->
+    <!-- AI SUGGESTIONS -->
+    <!-- ============================== -->
+
+    <div id="aiSuggestions">
+
+        <!-- Predictive typing -->
+
+        <div class="ai-title">
+            ✨ Suggestions
+        </div>
+
+        <div id="typingSuggestions"></div>
+
+
+        <!-- Smart replies -->
+
+        <div
+            class="ai-title"
+            style="margin-top: 10px;"
+        >
+            💬 Smart Replies
+        </div>
+
+        <div id="smartReplies"></div>
+
+
+        <!-- Loading -->
+
+        <div id="aiLoading">
+            Generating suggestions...
+        </div>
+
+    </div>
 
 
     <!-- ============================== -->

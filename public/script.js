@@ -5,51 +5,57 @@
 const messageForm =
     document.getElementById("messageForm");
 
-
 const messageInput =
     document.getElementById("messageInput");
 
-
 const messages =
     document.getElementById("messages");
-
 
 // Personal chat
 
 const userEmailInput =
     document.getElementById("userEmailInput");
 
-
 const joinRoomBtn =
     document.getElementById("joinRoomBtn");
 
-
 const roomStatus =
     document.getElementById("roomStatus");
-
 
 // Group chat
 
 const groupNameInput =
     document.getElementById("groupNameInput");
 
-
 const joinGroupBtn =
     document.getElementById("joinGroupBtn");
-
 
 const leaveGroupBtn =
     document.getElementById("leaveGroupBtn");
 
-
 const groupStatus =
     document.getElementById("groupStatus");
-
 
 // Media
 
 const mediaInput =
     document.getElementById("mediaInput");
+
+
+// ======================================
+// AI SUGGESTIONS
+// ======================================
+
+const typingSuggestions =
+    document.getElementById("typingSuggestions");
+
+const smartReplies =
+    document.getElementById("smartReplies");
+
+const aiLoading =
+    document.getElementById("aiLoading");
+
+let suggestionTimer;
 
 
 // ======================================
@@ -70,7 +76,6 @@ if (!userEmail) {
 
     window.location.href =
         "login.html";
-
 }
 
 
@@ -211,6 +216,14 @@ socket.on(
 
         displayMessage(chat);
 
+        // Generate smart replies for incoming message
+        if (
+            chat.message &&
+            chat.sender !== userEmail
+        ) {
+            getAISuggestions(chat.message);
+        }
+
     }
 );
 
@@ -241,6 +254,11 @@ socket.on(
                 new Date()
 
         });
+
+        // Generate smart replies
+        if (data.message) {
+            getAISuggestions(data.message);
+        }
 
     }
 );
@@ -273,6 +291,14 @@ socket.on(
 
         });
 
+        // Generate smart replies
+        if (
+            data.message &&
+            data.username !== userEmail
+        ) {
+            getAISuggestions(data.message);
+        }
+
     }
 );
 
@@ -289,7 +315,6 @@ socket.on(
             "Media received:",
             data
         );
-
 
         displayMediaMessage(data);
 
@@ -591,9 +616,9 @@ function displayMessage(chat) {
             ".message-user"
         )
         .textContent =
-            chat.sender ||
-            chat.user_id ||
-            "User";
+        chat.sender ||
+        chat.user_id ||
+        "User";
 
 
     message
@@ -601,7 +626,7 @@ function displayMessage(chat) {
             ".message-text"
         )
         .textContent =
-            chat.message;
+        chat.message;
 
 
     messages.appendChild(
@@ -853,6 +878,267 @@ async function loadMessages() {
 
 }
 
+
+// ======================================
+// AI SUGGESTIONS
+// ======================================
+
+async function getAISuggestions(message) {
+
+    try {
+
+        if (!message || !message.trim()) {
+            return;
+        }
+
+        if (aiLoading) {
+            aiLoading.style.display = "block";
+        }
+
+
+        const response =
+            await fetch(
+                "/api/chat/ai-suggestions",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        message:
+                            message
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            console.error(
+                "AI suggestion error:",
+                data
+            );
+
+            return;
+
+        }
+
+
+        showTypingSuggestions(
+            data.typingSuggestions || []
+        );
+
+
+        showSmartReplies(
+            data.smartReplies || []
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "Gemini AI error:",
+            error
+        );
+
+    }
+    finally {
+
+        if (aiLoading) {
+            aiLoading.style.display = "none";
+        }
+
+    }
+
+}
+
+
+// ======================================
+// DISPLAY TYPING SUGGESTIONS
+// ======================================
+
+function showTypingSuggestions(
+    suggestions
+) {
+
+    if (!typingSuggestions) {
+        return;
+    }
+
+
+    typingSuggestions.innerHTML = "";
+
+
+    suggestions.forEach(
+        (suggestion) => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "ai-button";
+
+
+            button.type =
+                "button";
+
+
+            button.textContent =
+                suggestion;
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const currentText =
+                        messageInput.value.trim();
+
+
+                    messageInput.value =
+                        currentText +
+                        (
+                            currentText
+                                ? " "
+                                : ""
+                        ) +
+                        suggestion;
+
+
+                    messageInput.focus();
+
+                }
+            );
+
+
+            typingSuggestions.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+// ======================================
+// DISPLAY SMART REPLIES
+// ======================================
+
+function showSmartReplies(
+    replies
+) {
+
+    if (!smartReplies) {
+        return;
+    }
+
+
+    smartReplies.innerHTML = "";
+
+
+    replies.forEach(
+        (reply) => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "ai-button";
+
+
+            button.type =
+                "button";
+
+
+            button.textContent =
+                reply;
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    messageInput.value =
+                        reply;
+
+                    messageInput.focus();
+
+                }
+            );
+
+
+            smartReplies.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+// ======================================
+// PREDICTIVE TYPING
+// ======================================
+
+messageInput.addEventListener(
+    "input",
+    () => {
+
+        clearTimeout(
+            suggestionTimer
+        );
+
+
+        const message =
+            messageInput.value.trim();
+
+
+        if (!message) {
+
+            if (typingSuggestions) {
+                typingSuggestions.innerHTML =
+                    "";
+            }
+
+            return;
+
+        }
+
+
+        suggestionTimer =
+            setTimeout(
+                () => {
+
+                    getAISuggestions(
+                        message
+                    );
+
+                },
+                700
+            );
+
+    }
+);
+
+
+// ======================================
+// LOAD MESSAGES
+// ======================================
 
 loadMessages();
 
